@@ -28,7 +28,7 @@ use:
 ```
 $ docker run -d --name devdns -p 53:53/udp \
   -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
-$ docker run --d --name redis redis
+$ docker run -d --name redis redis
 $ docker run -it --rm \
   --dns=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" devdns` debian \
   ping redis.dev
@@ -56,6 +56,10 @@ The extra options you'll have to add is
 Please note that you should probably also add `--dns 8.8.8.8` after to be able
 to query for other hosts outside you local Docker network.
 Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
+
+`172.17.42.1` is the default IP of the Docker bridge, and port 53 on this host
+should be reachable from within all started containers given that you've
+included `-p53:53/upd` when starting the devdns container.
 
 [Docker configuring docs]: https://docs.docker.com/articles/configuring/#configuring-docker
 [Docker systemd docs]: https://docs.docker.com/articles/systemd/#custom-docker-daemon-options
