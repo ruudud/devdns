@@ -38,6 +38,29 @@ Please note that the `--dns` flag will prepend the given DNS server to the
 Docker default (normally `8.8.8.8`), so lookups for external addresses will
 still work.
 
+#### Docker Daemon Configuration
+If you want devdns to be added by default to all new containers, you need to
+add some custom Docker daemon options. The place to put this config varies:
+
+ * Ubuntu <= 14.10: `/etc/default/docker`, see the
+   [Docker configuring docs][]
+ * Ubuntu >= 15.04: `/etc/systemd/system/docker.service`, see the
+   [Docker systemd docs][]
+ * OSX boot2docker: `/var/lib/boot2docker/profile`, see the
+   [boot2docker faq][]
+
+The extra options you'll have to add is
+
+    --dns 172.17.42.1 --dns-search dev
+
+Please note that you should probably also add `--dns 8.8.8.8` after to be able
+to query for other hosts outside you local Docker network.
+Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
+
+[Docker configuring docs]: https://docs.docker.com/articles/configuring/#configuring-docker
+[Docker systemd docs]: https://docs.docker.com/articles/systemd/#custom-docker-daemon-options
+[boot2docker faq]: https://github.com/boot2docker/boot2docker/blob/master/doc/FAQ.md#local-customisation-with-persistent-partition
+
 
 ### Host Machine → Containers
 You will need to add some configuration to your OS resolving mechanism.
