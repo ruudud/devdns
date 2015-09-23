@@ -5,7 +5,7 @@ extrahosts=($EXTRA_HOSTS)
 dnsmasq_pid=""
 
 start_dnsmasq(){
-  dnsmasq -k &
+  dnsmasq --keep-in-foreground &
   dnsmasq_pid=$!
 }
 reload_dnsmasq(){

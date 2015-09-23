@@ -4,8 +4,6 @@ when running a bunch of containers on your laptop. Useful for
 **container to container communication**, or just an easy way of **reaching
 containers from the host machine**.
 
-This image will *not* forward DNS requests.
-
 
 ## Running
 
@@ -17,6 +15,9 @@ names and IP addresses, in addition to listen to new events.
 
 Binding port 53 on the host machine is optional, but will make it easier when
 configuring local resolving.
+
+The DNS server running in devdns is set to proxy requests for unknown hosts to
+Google's DNS server 8.8.8.8.
 
 
 ## Using
@@ -53,8 +54,6 @@ The extra options you'll have to add is
 
     --dns 172.17.42.1 --dns-search dev
 
-Please note that you should probably also add `--dns 8.8.8.8` after to be able
-to query for other hosts outside you local Docker network.
 Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
 
 `172.17.42.1` is the default IP of the Docker bridge, and port 53 on this host
