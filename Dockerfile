@@ -1,4 +1,5 @@
 FROM alpine:3.2
+MAINTAINER Pål Ruud <ruudud@gmail.com>
 
 RUN apk --update add \
     bash \
@@ -17,7 +18,6 @@ ADD run.sh /run.sh
 ENV DNS_DOMAIN="dev"
 ENV EXTRA_HOSTS=""
 
-EXPOSE 53 53/udp
+EXPOSE 53/udp
 
-CMD ["/run.sh"]
-
+ENTRYPOINT ["/run.sh"]
