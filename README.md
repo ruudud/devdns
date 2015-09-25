@@ -88,6 +88,9 @@ Or, if you didn't specify `-p 53:53/udp` when starting devdns, use:
 
     nameserver <listen address of devdns>
 
+Please note that this change will be removed up on reboot. To make the change
+permanent, you have to use your network configurator.
+
 
 ## Configuration
 
