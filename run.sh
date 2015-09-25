@@ -20,19 +20,15 @@ set_record(){
 }
 set_container_record(){
   local cid="$1"
-  local name=$(docker inspect -f '{{ .Name }}' "$cid" | sed "s,^/,,")
-  if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-    echo -n "Warn: ${name}.${domain} is not a valid DNS name. "
-    local newname="${name//_/-}"
-    if [[ ! "$newname" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-      echo "Use a different container name. Ignoring."
-      return 1
-    else
-      echo "Replaced _ with -."
-      name="$newname"
-    fi
-  fi
   local new_ip=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' "$cid")
+  local name=$(docker inspect -f '{{ .Name }}' "$cid" | sed "s,^/,,")
+
+  # Docker allows _ in names, but other than that same as RFC 1123
+  if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
+    echo "Warn: ${name}.${domain} is not a valid DNS name. Replaced _ with -."
+    name="${name//_/-}"
+  fi
+
   local record="${name}.${domain}"
   set_record "$record" "$new_ip"
 }
