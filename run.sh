@@ -35,8 +35,9 @@ del_container_record(){
   local cid="$1"
   local name=$(get_safe_name "$cid")
   local record="${name}.${domain}"
+  local file="${dnsmasq_path}${record}.conf"
 
-  rm "${dnsmasq_path}${record}.conf"
+  [[ -f "$file" ]] && rm "$file"
   echo "- Removed record for ${record}"
 }
 set_container_record(){
