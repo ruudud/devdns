@@ -26,6 +26,8 @@ get_safe_name(){
 set_record(){
   local record="$1"
   local ip="$2"
+  [[ -z "$ip" ]] && return 1
+
   echo "host-record=${record},${ip}" > "${dnsmasq_path}${record}.conf"
   echo "+ Added ${record} → ${ip}"
 }
@@ -54,19 +56,16 @@ set_extra_records(){
 setup_listener(){
   while read -r time container _ _ event; do
     case "$event" in
-      start)
+      'start')
         set_container_record "${container%%:}"
         reload_dnsmasq
         ;;
-      stop)
+      'die')
         del_container_record "${container%%:}"
         reload_dnsmasq
         ;;
-      *)
-        echo "wut?"
-        ;;
     esac
-  done < <(docker events -f event=start -f event=stop)
+  done < <(docker events -f event=start -f event=die)
 }
 add_running_containers(){
   local ids=$(docker ps -q)
