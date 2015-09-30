@@ -11,13 +11,17 @@ containers from the host machine**.
       -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
 
 devdns requires access to the Docker socket to be able to query for container
-names and IP addresses, in addition to listen to new events. 
+names and IP addresses, in addition to listen to start/stop events.
 
 Binding port 53 on the host machine is optional, but will make it easier when
 configuring local resolving.
 
 The DNS server running in devdns is set to proxy requests for unknown hosts to
 Google's DNS server 8.8.8.8.
+It also adds a wildcard record (normally `*.dev`, see `DNS_DOMAIN` below)
+pointing back at the host machine (bridge IP in Linux), to facilitate
+communication when running a combination of services "inside" and "outside" of
+Docker.
 
 
 ## Using
@@ -108,3 +112,6 @@ docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
 ```
 
 
+## Caveats
+RFC 1123 states that `_` are not allowed in DNS records, but Docker allows it
+in container names. These are replaced with `-` before adding the record.
