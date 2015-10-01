@@ -2,7 +2,7 @@
 #set -x
 domain="${DNS_DOMAIN:-dev}"
 extrahosts=($EXTRA_HOSTS)
-osx="${OSX:-false}"
+hostmachineip="${HOSTMACHINE_IP:-172.17.42.1}"
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
 
@@ -75,12 +75,6 @@ add_running_containers(){
   done
 }
 add_wildcard_record(){
-  local hostmachineip
-  if [[ "$OSX" == "true" ]]; then
-    hostmachineip="192.168.59.3"
-  else
-    hostmachineip="172.17.42.1"
-  fi
   echo "address=/.${domain}/${hostmachineip}" > "/etc/dnsmasq.d/hostmachine.conf"
   echo "+ Added *.${domain} → ${hostmachineip}"
 }
@@ -90,4 +84,3 @@ add_running_containers
 set_extra_records
 start_dnsmasq
 setup_listener
-

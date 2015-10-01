@@ -17,7 +17,7 @@ ADD run.sh /run.sh
 
 ENV DNS_DOMAIN="dev"
 ENV EXTRA_HOSTS=""
-ENV OSX="false"
+ENV HOSTMACHINE_IP="172.17.42.1"
 
 EXPOSE 53/udp
 
