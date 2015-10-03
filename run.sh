@@ -28,7 +28,8 @@ set_record(){
   local ip="$2"
   [[ -z "$ip" ]] && return 1
 
-  echo "host-record=${record},${ip}" > "${dnsmasq_path}${record}.conf"
+  echo "address=/.${record}/${ip}" > "${dnsmasq_path}${record}.conf"
+  #echo "host-record=${record},${ip}" > "${dnsmasq_path}${record}.conf"
   echo "+ Added ${record} → ${ip}"
 }
 del_container_record(){
