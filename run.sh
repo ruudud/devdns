@@ -58,16 +58,16 @@ set_extra_records(){
 setup_listener(){
   while read -r time container _ _ event; do
     case "$event" in
-      'start')
+      start|rename)
         set_container_record "${container%%:}"
         reload_dnsmasq
         ;;
-      'die')
+      die)
         del_container_record "${container%%:}"
         reload_dnsmasq
         ;;
     esac
-  done < <(docker events -f event=start -f event=die)
+  done < <(docker events -f event=start -f event=die -f event=rename)
 }
 add_running_containers(){
   local ids=$(docker ps -q)
