@@ -114,4 +114,24 @@ docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
 
 ## Caveats
 RFC 1123 states that `_` are not allowed in DNS records, but Docker allows it
-in container names. These are replaced with `-` before adding the record.
+in container names. devdns ignores `_` and whatever follows, allowing multiple
+simultaneous containers with matching names to run at the same time.
+
+The DNS will resolve to the lastly added container, and try to re-toggle the
+previous matching container when stopping the currently active one.
+
+Example:
+```
+# (devdns already running)
+$ docker run -d --name redis_local-V1 redis
+$ dig redis.dev     # resolves to the IP of redis_local-V1
+
+$ docker run -d --name redis_test redis
+$ dig redis.dev     # resolves to the IP of redis_test
+
+$ docker stop redis_test
+$ dig redis.dev     # resolves to the IP of redis_local-V1
+
+$ docker stop redis_local-V1
+$ dig redis.dev     # resolves to the IP of the host machine (default)
+```
