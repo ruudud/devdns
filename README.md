@@ -70,7 +70,9 @@ included `-p53:53/upd` when starting the devdns container.
 
 
 ### Host Machine → Containers
-You will need to add some configuration to your OS resolving mechanism.
+You will need to add some configuration to your OS resolving mechanism.  
+**NOTE**: This is only practical if you added `-p 53:53/udp` when starting
+devdns.
 
 #### OSX
 Create a file `/etc/resolver/dev` containing
@@ -84,16 +86,21 @@ the value of the `DNS_DOMAIN` setting (default "dev").
 
 
 #### Linux / Ubuntu
-Edit `/etc/resolv.conf`, at the top of the file, add:
+Nowadays, direct edits of `/etc/resolv.conf` will be removed at reboot.
+Thus, the best place to add extra resolvers in Linux, is to use your network
+configurator. YMMV. This means NetworkManager, WICD, or manually using
+`/etc/network/interfaces`:
 
-    nameserver 127.0.0.1
+    auto p3p1
+    iface p3p1 inet dhcp
+    dns-search dev
+    dns-nameservers 127.0.0.1
 
-Or, if you didn't specify `-p 53:53/udp` when starting devdns, use:
+Alternatively, edit `/etc/dhcp/dhclient.conf` instead. Uncomment or add the
+following line:
 
-    nameserver <listen address of devdns>
-
-Please note that this change will be removed up on reboot. To make the change
-permanent, you have to use your network configurator.
+    supersede domain-name "dev";
+    prepend domain-name-servers 127.0.0.1;
 
 
 ## Configuration
