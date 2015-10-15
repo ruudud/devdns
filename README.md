@@ -88,8 +88,8 @@ the value of the `DNS_DOMAIN` setting (default "dev").
 #### Linux / Ubuntu
 Nowadays, direct edits of `/etc/resolv.conf` will be removed at reboot.
 Thus, the best place to add extra resolvers in Linux, is to use your network
-configurator. YMMV. This means NetworkManager, WICD, or manually using
-`/etc/network/interfaces`:
+configurator. YMMV. This means NetworkManager (see section below), WICD, or
+manually using `/etc/network/interfaces`:
 
     auto p3p1
     iface p3p1 inet dhcp
@@ -120,6 +120,8 @@ docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
 
 
 ## Caveats
+
+### Container name to DNS record conversion
 RFC 1123 states that `_` are not allowed in DNS records, but Docker allows it
 in container names. devdns ignores `_` and whatever follows, allowing multiple
 simultaneous containers with matching names to run at the same time.
@@ -142,3 +144,21 @@ $ dig redis.dev     # resolves to the IP of redis_local-V1
 $ docker stop redis_local-V1
 $ dig redis.dev     # resolves to the IP of the host machine (default)
 ```
+
+### NetworkManager on Ubuntu
+If you're using **NetworkManager**, you should disable the built-in DNSMasq to
+get the port binding of port 53 to work.
+
+Edit `/etc/NetworkManager/NetworkManager.conf` and comment out the line
+`dns=dnsmasq` so it looks like this:
+
+    # dns=dnsmasq
+
+Restart using `sudo service network-manager restart`.
+
+Now you should be able to do
+```
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
+    -p 53:53/udp ruudud/devdns
+```
+
