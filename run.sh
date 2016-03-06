@@ -2,7 +2,7 @@
 #set -x
 domain="${DNS_DOMAIN:-dev}"
 extrahosts=($EXTRA_HOSTS)
-hostmachineip="${HOSTMACHINE_IP:-172.17.42.1}"
+hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
 

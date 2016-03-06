@@ -58,11 +58,11 @@ add some custom Docker daemon options. The place to put this config varies:
 
 The extra options you'll have to add is
 
-    --dns 172.17.42.1 --dns-search dev
+    --dns 172.17.0.1 --dns-search dev
 
 Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
 
-`172.17.42.1` is the default IP of the Docker bridge, and port 53 on this host
+`172.17.0.1` is the default IP of the Docker bridge, and port 53 on this host
 should be reachable from within all started containers given that you've
 included `-p53:53/upd` when starting the devdns container.
 
@@ -108,6 +108,7 @@ following line:
 ## Configuration
 
  * `DNS_DOMAIN`: set the local domain used. (default: dev)
+ * `HOSTMACHINE_IP`: IP address of non-matching queries (default: 172.17.0.1)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of
    host=ip pairs. (default: '')
 
@@ -116,7 +117,8 @@ Example:
 ```
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
   -e DNS_DOMAIN=docker \
-  -e EXTRA_HOSTS="dockerhost=172.17.42.1 doubleclick.net=127.0.0.1" \
+  -e HOSTMACHINE_IP=192.168.1.1 \
+  -e EXTRA_HOSTS="dockerhost=172.17.0.1 doubleclick.net=127.0.0.1" \
   ruudud/devdns
 ```
 
