@@ -1,19 +1,15 @@
-FROM alpine:3.2
+FROM alpine:3.3
 MAINTAINER Pål Ruud <ruudud@gmail.com>
 
-RUN apk --update add \
-    bash \
-    curl \
-    dnsmasq && \
-    rm -rf /var/cache/apk/*
+RUN apk --no-cache add bash curl dnsmasq
 
-RUN curl -L https://get.docker.com/builds/Linux/x86_64/docker-1.8.0 > /usr/local/bin/docker && \
-  chmod +x /usr/local/bin/docker
+RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-1.11.1.tgz \
+        | tar zx -C /tmp &&\
+    mv /tmp/docker/* /usr/local/bin/ &&\
+    mkdir -p /etc/dnsmasq.d
 
-RUN mkdir -p /etc/dnsmasq.d
-
-ADD dnsmasq.conf /etc/dnsmasq.conf
-ADD run.sh /run.sh
+COPY dnsmasq.conf /etc/dnsmasq.conf
+COPY run.sh /run.sh
 
 ENV DNS_DOMAIN="dev"
 ENV EXTRA_HOSTS=""

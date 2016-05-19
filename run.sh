@@ -19,9 +19,12 @@ reload_dnsmasq(){
   kill $dnsmasq_pid
   start_dnsmasq
 }
-get_safe_name(){
+get_name(){
   local cid="$1"
-  local name=$(docker inspect -f '{{ .Name }}' "$cid" | sed "s,^/,,")
+  docker inspect -f '{{ .Name }}' "$cid" | sed "s,^/,,"
+}
+get_safe_name(){
+  local name="$1"
   # Docker allows _ in names, but other than that same as RFC 1123
   # We remove everything from "_" and use the result as record.
   if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
@@ -54,8 +57,9 @@ del_container_record(){
 set_container_record(){
   local cid="$1"
   local ip=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' "$cid")
-  local name=$(get_safe_name "$cid")
-  local record="${name}.${domain}"
+  local name=$(get_name "$cid")
+  local safename=$(get_safe_name "$name")
+  local record="${safename}.${domain}"
   set_record "$record" "$ip"
 }
 set_extra_records(){
@@ -74,19 +78,19 @@ find_and_set_prev_record(){
   set_container_record "$prevcid"
 }
 setup_listener(){
-  while read -r time container _ _ event; do
+  while read -r time _ event container meta; do
     case "$event" in
       start|rename)
-        set_container_record "${container%%:}"
+        set_container_record "$container"
         reload_dnsmasq
         ;;
       die)
-        local cid="${container%%:}"
-        [[ -z "$cid" ]] && continue
-        local name=$(get_safe_name "$cid")
+        local name=$(echo "$meta" | grep -Eow "name=[_a-z]+" | cut -d= -f2)
+        [[ -z "$name" ]] && continue
+        safename=$(get_safe_name "$name")
 
-        del_container_record "$name"
-        find_and_set_prev_record "$name"
+        del_container_record "$safename"
+        find_and_set_prev_record "$safename"
         reload_dnsmasq
         ;;
     esac
