@@ -64,7 +64,7 @@ Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
 
 `172.17.0.1` is the default IP of the Docker bridge, and port 53 on this host
 should be reachable from within all started containers given that you've
-included `-p53:53/upd` when starting the devdns container.
+included `-p 53:53/udp` when starting the devdns container.
 
 [Docker configuring docs]: https://docs.docker.com/articles/configuring/#configuring-docker
 [Docker systemd docs]: https://docs.docker.com/articles/systemd/#custom-docker-daemon-options
