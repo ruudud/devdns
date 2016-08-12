@@ -4,7 +4,7 @@ when running a bunch of containers on your laptop. Useful for
 **container to container communication**, or just an easy way of **reaching
 containers from the host machine**.
 
-[![](https://badge.imagelayers.io/ruudud/devdns:latest.svg)](https://imagelayers.io/?images=ruudud/devdns:latest 'Get your own badge on imagelayers.io')
+[![](https://images.microbadger.com/badges/image/ruudud/devdns.svg)](https://microbadger.com/images/ruudud/devdns "Get your own image badge on microbadger.com")
 
 
 ## Running
