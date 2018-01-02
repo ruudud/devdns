@@ -58,7 +58,7 @@ add some custom Docker daemon options. The place to put this config varies:
 
 The extra options you'll have to add is
 
-    --dns 172.17.0.1 --dns-search dev
+    --dns 172.17.0.1 --dns-search test
 
 Replace `test` with whatever you set as config for `DNS_DOMAIN`.
 
