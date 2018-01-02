@@ -20,7 +20,7 @@ configuring local resolving.
 
 The DNS server running in devdns is set to proxy requests for unknown hosts to
 Google's DNS server 8.8.8.8.
-It also adds a wildcard record (normally `*.dev`, see `DNS_DOMAIN` below)
+It also adds a wildcard record (normally `*.test`, see `DNS_DOMAIN` below)
 pointing back at the host machine (bridge IP in Linux), to facilitate
 communication when running a combination of services "inside" and "outside" of
 Docker.
@@ -38,7 +38,7 @@ $ docker run -d --name devdns -p 53:53/udp \
 $ docker run -d --name redis redis
 $ docker run -it --rm \
   --dns=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" devdns` debian \
-  ping redis.dev
+  ping redis.test
 ```
 
 Please note that the `--dns` flag will prepend the given DNS server to the
@@ -137,16 +137,16 @@ Example:
 ```
 # (devdns already running)
 $ docker run -d --name redis_local-V1 redis
-$ dig redis.dev     # resolves to the IP of redis_local-V1
+$ dig redis.test     # resolves to the IP of redis_local-V1
 
 $ docker run -d --name redis_test redis
-$ dig redis.dev     # resolves to the IP of redis_test
+$ dig redis.test     # resolves to the IP of redis_test
 
 $ docker stop redis_test
-$ dig redis.dev     # resolves to the IP of redis_local-V1
+$ dig redis.test     # resolves to the IP of redis_local-V1
 
 $ docker stop redis_local-V1
-$ dig redis.dev     # resolves to the IP of the host machine (default)
+$ dig redis.test     # resolves to the IP of the host machine (default)
 ```
 
 ### NetworkManager on Ubuntu
