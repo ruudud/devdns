@@ -20,7 +20,7 @@ configuring local resolving.
 
 The DNS server running in devdns is set to proxy requests for unknown hosts to
 Google's DNS server 8.8.8.8.
-It also adds a wildcard record (normally `*.dev`, see `DNS_DOMAIN` below)
+It also adds a wildcard record (normally `*.test`, see `DNS_DOMAIN` below)
 pointing back at the host machine (bridge IP in Linux), to facilitate
 communication when running a combination of services "inside" and "outside" of
 Docker.
@@ -38,7 +38,7 @@ $ docker run -d --name devdns -p 53:53/udp \
 $ docker run -d --name redis redis
 $ docker run -it --rm \
   --dns=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" devdns` debian \
-  ping redis.dev
+  ping redis.test
 ```
 
 Please note that the `--dns` flag will prepend the given DNS server to the
@@ -58,9 +58,9 @@ add some custom Docker daemon options. The place to put this config varies:
 
 The extra options you'll have to add is
 
-    --dns 172.17.0.1 --dns-search dev
+    --dns 172.17.0.1 --dns-search test
 
-Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
+Replace `test` with whatever you set as config for `DNS_DOMAIN`.
 
 `172.17.0.1` is the default IP of the Docker bridge, and port 53 on this host
 should be reachable from within all started containers given that you've
@@ -77,14 +77,14 @@ You will need to add some configuration to your OS resolving mechanism.
 devdns.
 
 #### OSX
-Create a file `/etc/resolver/dev` containing
+Create a file `/etc/resolver/test` containing
 
     nameserver <listen address of devdns>
 
 In OSX, there's a good chance you're using boot2docker, so the listen address
 will probably be the output of `boot2docker ip`.
 Please note that the name of the file created in `/etc/resolver` has to match
-the value of the `DNS_DOMAIN` setting (default "dev").
+the value of the `DNS_DOMAIN` setting (default "test").
 
 
 #### Linux / Ubuntu
@@ -95,19 +95,19 @@ manually using `/etc/network/interfaces`:
 
     auto p3p1
     iface p3p1 inet dhcp
-    dns-search dev
+    dns-search test
     dns-nameservers 127.0.0.1
 
 Alternatively, edit `/etc/dhcp/dhclient.conf` instead. Uncomment or add the
 following line:
 
-    supersede domain-name "dev";
+    supersede domain-name "test";
     prepend domain-name-servers 127.0.0.1;
 
 
 ## Configuration
 
- * `DNS_DOMAIN`: set the local domain used. (default: dev)
+ * `DNS_DOMAIN`: set the local domain used. (default: test)
  * `HOSTMACHINE_IP`: IP address of non-matching queries (default: 172.17.0.1)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of
    host=ip pairs. (default: '')
@@ -137,16 +137,16 @@ Example:
 ```
 # (devdns already running)
 $ docker run -d --name redis_local-V1 redis
-$ dig redis.dev     # resolves to the IP of redis_local-V1
+$ dig redis.test     # resolves to the IP of redis_local-V1
 
 $ docker run -d --name redis_test redis
-$ dig redis.dev     # resolves to the IP of redis_test
+$ dig redis.test     # resolves to the IP of redis_test
 
 $ docker stop redis_test
-$ dig redis.dev     # resolves to the IP of redis_local-V1
+$ dig redis.test     # resolves to the IP of redis_local-V1
 
 $ docker stop redis_local-V1
-$ dig redis.dev     # resolves to the IP of the host machine (default)
+$ dig redis.test     # resolves to the IP of the host machine (default)
 ```
 
 ### NetworkManager on Ubuntu
