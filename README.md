@@ -77,7 +77,7 @@ You will need to add some configuration to your OS resolving mechanism.
 devdns.
 
 #### OSX
-Create a file `/etc/resolver/dev` containing
+Create a file `/etc/resolver/test` containing
 
     nameserver <listen address of devdns>
 
