@@ -60,7 +60,7 @@ The extra options you'll have to add is
 
     --dns 172.17.0.1 --dns-search dev
 
-Replace `dev` with whatever you set as config for `DNS_DOMAIN`.
+Replace `test` with whatever you set as config for `DNS_DOMAIN`.
 
 `172.17.0.1` is the default IP of the Docker bridge, and port 53 on this host
 should be reachable from within all started containers given that you've
@@ -84,7 +84,7 @@ Create a file `/etc/resolver/test` containing
 In OSX, there's a good chance you're using boot2docker, so the listen address
 will probably be the output of `boot2docker ip`.
 Please note that the name of the file created in `/etc/resolver` has to match
-the value of the `DNS_DOMAIN` setting (default "dev").
+the value of the `DNS_DOMAIN` setting (default "test").
 
 
 #### Linux / Ubuntu
@@ -95,19 +95,19 @@ manually using `/etc/network/interfaces`:
 
     auto p3p1
     iface p3p1 inet dhcp
-    dns-search dev
+    dns-search test
     dns-nameservers 127.0.0.1
 
 Alternatively, edit `/etc/dhcp/dhclient.conf` instead. Uncomment or add the
 following line:
 
-    supersede domain-name "dev";
+    supersede domain-name "test";
     prepend domain-name-servers 127.0.0.1;
 
 
 ## Configuration
 
- * `DNS_DOMAIN`: set the local domain used. (default: dev)
+ * `DNS_DOMAIN`: set the local domain used. (default: test)
  * `HOSTMACHINE_IP`: IP address of non-matching queries (default: 172.17.0.1)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of
    host=ip pairs. (default: '')
