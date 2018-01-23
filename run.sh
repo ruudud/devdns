@@ -24,9 +24,9 @@ get_name(){
   docker inspect -f '{{ .Name }}' "$cid" | sed "s,^/,,"
 }
 get_safe_name(){
-  local name="$1"
+  local name=$(echo "$1" | sed 's/_/-/g')
   # Docker allows _ in names, but other than that same as RFC 1123
-  # We remove everything from "_" and use the result as record.
+  # We change "_" to "-" and use the result as record.
   if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
     name="${name%%_*}"
   fi
