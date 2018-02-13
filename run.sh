@@ -3,6 +3,7 @@
 domain="${DNS_DOMAIN:-test}"
 extrahosts=($EXTRA_HOSTS)
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
+naming="${NAMING:-default}"
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
 
@@ -25,11 +26,21 @@ get_name(){
 }
 get_safe_name(){
   local name="$1"
-  # Docker allows _ in names, but other than that same as RFC 1123
-  # We remove everything from "_" and use the result as record.
-  if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-    name="${name%%_*}"
-  fi
+  case "$NAMING" in
+    full)
+      # Replace _ with -, useful when using default Docker naming
+      name=$(echo "$name" | sed 's/_/-/g')
+      ;;
+
+    *)
+      # Docker allows _ in names, but other than that same as RFC 1123
+      # We remove everything from "_" and use the result as record.
+      if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
+        name="${name%%_*}"
+      fi
+      ;;
+  esac
+
   echo "$name"
 }
 set_record(){

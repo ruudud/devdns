@@ -111,6 +111,8 @@ following line:
  * `HOSTMACHINE_IP`: IP address of non-matching queries (default: 172.17.0.1)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of
    host=ip pairs. (default: '')
+ * `NAMING`: set to "full" to convert `_` to `-` (default: up to first `_` of
+   container name)
 
 Example:
 
@@ -118,6 +120,7 @@ Example:
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
   -e DNS_DOMAIN=docker \
   -e HOSTMACHINE_IP=192.168.1.1 \
+  -e NAMING=full \
   -e EXTRA_HOSTS="dockerhost=172.17.0.1 doubleclick.net=127.0.0.1" \
   ruudud/devdns
 ```
