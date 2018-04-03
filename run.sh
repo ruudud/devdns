@@ -74,7 +74,7 @@ del_container_record(){
 }
 set_container_record(){
   local cid="$1"
-  local ip=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' "$cid")
+  local ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid" | head -n1)
   local name=$(get_name "$cid")
   local safename=$(get_safe_name "$name")
   local record="${safename}.${domain}"
