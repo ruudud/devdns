@@ -19,11 +19,10 @@ Binding port 53 on the host machine is optional, but will make it easier when
 configuring local resolving.
 
 The DNS server running in devdns is set to proxy requests for unknown hosts to
-Google's DNS server 8.8.8.8.
-It also adds a wildcard record (normally `*.test`, see `DNS_DOMAIN` below)
-pointing back at the host machine (bridge IP in Linux), to facilitate
-communication when running a combination of services "inside" and "outside" of
-Docker.
+Google's DNS server 8.8.8.8. It also adds a wildcard record (by default `*.test`,
+see `DNS_DOMAIN` below) pointing back at the host machine (bridge IP in Linux),
+to facilitate communication when running a combination of services "inside" and
+"outside" of Docker.
 
 
 ## Using
@@ -72,7 +71,7 @@ included `-p 53:53/udp` when starting the devdns container.
 
 
 ### Host Machine → Containers
-You will need to add some configuration to your OS resolving mechanism.  
+You will need to add some configuration to your OS resolving mechanism.
 **NOTE**: This is only practical if you added `-p 53:53/udp` when starting
 devdns.
 
@@ -107,7 +106,7 @@ following line:
 
 ## Configuration
 
- * `DNS_DOMAIN`: set the local domain used. (default: test)
+ * `DNS_DOMAIN`: a comma-separated list of domains (default: test)
  * `HOSTMACHINE_IP`: IP address of non-matching queries (default: 172.17.0.1)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of
    host=ip pairs. (default: '')
@@ -168,4 +167,3 @@ Now you should be able to do
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
     -p 53:53/udp ruudud/devdns
 ```
-

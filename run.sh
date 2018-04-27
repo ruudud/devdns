@@ -43,7 +43,7 @@ get_safe_name(){
       # Docker allows _ in names, but other than that same as RFC 1123
       # We remove everything from "_" and use the result as record.
       if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-        name="${name%%_*}"
+  name="${name%%_*}"
       fi
       ;;
   esac
@@ -65,20 +65,24 @@ set_record(){
   echo -e "$infomsg"
 }
 del_container_record(){
-  local name="$1"
-  local record="${name}.${domain}"
-  local file="${dnsmasq_path}${record}.conf"
+  split_on_commas "${domain}" | while read item; do
+    local name="$1"
+    local record="${name}.${item}"
+    local file="${dnsmasq_path}${record}.conf"
 
-  [[ -f "$file" ]] && rm "$file"
-  echo -e "${RED}- Removed record for ${record}${RESET}"
+    [[ -f "$file" ]] && rm "$file"
+    echo -e "${RED}- Removed record for ${record}${RESET}"
+  done
 }
 set_container_record(){
-  local cid="$1"
-  local ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid" | head -n1)
-  local name=$(get_name "$cid")
-  local safename=$(get_safe_name "$name")
-  local record="${safename}.${domain}"
-  set_record "$record" "$ip"
+  split_on_commas "${domain}" | while read item; do
+    local cid="$1"
+    local ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid" | head -n1)
+    local name=$(get_name "$cid")
+    local safename=$(get_safe_name "$name")
+    local record="${safename}.${item}"
+    set_record "$record" "$ip"
+  done
 }
 set_extra_records(){
   for record in "${extrahosts[@]}"; do
@@ -99,18 +103,18 @@ setup_listener(){
   while read -r time _ event container meta; do
     case "$event" in
       start|rename)
-        set_container_record "$container"
-        reload_dnsmasq
-        ;;
+  set_container_record "$container"
+  reload_dnsmasq
+  ;;
       die)
-        local name=$(echo "$meta" | grep -Eow "name=[_a-z]+" | cut -d= -f2)
-        [[ -z "$name" ]] && continue
-        safename=$(get_safe_name "$name")
+  local name=$(echo "$meta" | grep -Eow "name=[_a-z]+" | cut -d= -f2)
+  [[ -z "$name" ]] && continue
+  safename=$(get_safe_name "$name")
 
-        del_container_record "$safename"
-        find_and_set_prev_record "$safename"
-        reload_dnsmasq
-        ;;
+  del_container_record "$safename"
+  find_and_set_prev_record "$safename"
+  reload_dnsmasq
+  ;;
     esac
   done < <(docker events -f event=start -f event=die -f event=rename)
 }
@@ -120,9 +124,20 @@ add_running_containers(){
     set_container_record "$id"
   done
 }
+
+split_on_commas() {
+  local IFS=,
+  local list=($1)
+  for word in "${list[@]}"; do
+    echo "$word"
+  done
+}
+
 add_wildcard_record(){
-  echo "address=/.${domain}/${hostmachineip}" > "/etc/dnsmasq.d/hostmachine.conf"
-  echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
+  split_on_commas "${domain}" | while read item; do
+    echo "address=/.${item}/${hostmachineip}" > "/etc/dnsmasq.d/${item}.conf"
+    echo -e "${GREEN}+ Added *.${item} → ${hostmachineip}${RESET}"
+  done
 }
 
 add_wildcard_record
