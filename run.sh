@@ -1,5 +1,4 @@
 #!/bin/bash
-#set -x
 domain="${DNS_DOMAIN:-test}"
 extrahosts=($EXTRA_HOSTS)
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
@@ -43,7 +42,7 @@ get_safe_name(){
       # Docker allows _ in names, but other than that same as RFC 1123
       # We remove everything from "_" and use the result as record.
       if [[ ! "$name" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-  name="${name%%_*}"
+        name="${name%%_*}"
       fi
       ;;
   esac
@@ -103,18 +102,18 @@ setup_listener(){
   while read -r time _ event container meta; do
     case "$event" in
       start|rename)
-  set_container_record "$container"
-  reload_dnsmasq
-  ;;
+        set_container_record "$container"
+        reload_dnsmasq
+        ;;
       die)
-  local name=$(echo "$meta" | grep -Eow "name=[_a-z]+" | cut -d= -f2)
-  [[ -z "$name" ]] && continue
-  safename=$(get_safe_name "$name")
+        local name=$(echo "$meta" | grep -Eow "name=[_a-z]+" | cut -d= -f2)
+        [[ -z "$name" ]] && continue
+        safename=$(get_safe_name "$name")
 
-  del_container_record "$safename"
-  find_and_set_prev_record "$safename"
-  reload_dnsmasq
-  ;;
+        del_container_record "$safename"
+        find_and_set_prev_record "$safename"
+        reload_dnsmasq
+        ;;
     esac
   done < <(docker events -f event=start -f event=die -f event=rename)
 }
