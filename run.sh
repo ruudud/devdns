@@ -12,6 +12,8 @@ RED="\e[0;31;49m"
 GREEN="\e[0;32;49m"
 YELLOW="\e[0;33;49m"
 
+trap shutdown SIGINT SIGTERM
+
 start_dnsmasq(){
   dnsmasq --keep-in-foreground &
   dnsmasq_pid=$!
@@ -19,6 +21,11 @@ start_dnsmasq(){
 reload_dnsmasq(){
   kill $dnsmasq_pid
   start_dnsmasq
+}
+shutdown(){
+  echo "Shutting down..."
+  kill $dnsmasq_pid
+  exit 0
 }
 get_name(){
   local cid="$1"
