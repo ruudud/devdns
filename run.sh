@@ -104,7 +104,7 @@ setup_listener(){
         reload_dnsmasq
         ;;
       die)
-        local name=$(echo "$meta" | grep -Eow "name=[a-zA-Z0-9.-]+" | cut -d= -f2)
+        local name=$(echo "$meta" | grep -Eow "name=[a-zA-Z0-9.-_]+" | cut -d= -f2)
         [[ -z "$name" ]] && continue
         safename=$(get_safe_name "$name")
 
