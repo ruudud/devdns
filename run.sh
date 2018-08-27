@@ -1,5 +1,4 @@
 #!/bin/bash
-#set -x
 domain="${DNS_DOMAIN:-test}"
 extrahosts=($EXTRA_HOSTS)
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
@@ -65,20 +64,24 @@ set_record(){
   echo -e "$infomsg"
 }
 del_container_record(){
-  local name="$1"
-  local record="${name}.${domain}"
-  local file="${dnsmasq_path}${record}.conf"
+  split_on_commas "${domain}" | while read item; do
+    local name="$1"
+    local record="${name}.${item}"
+    local file="${dnsmasq_path}${record}.conf"
 
-  [[ -f "$file" ]] && rm "$file"
-  echo -e "${RED}- Removed record for ${record}${RESET}"
+    [[ -f "$file" ]] && rm "$file"
+    echo -e "${RED}- Removed record for ${record}${RESET}"
+  done
 }
 set_container_record(){
-  local cid="$1"
-  local ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid" | head -n1)
-  local name=$(get_name "$cid")
-  local safename=$(get_safe_name "$name")
-  local record="${safename}.${domain}"
-  set_record "$record" "$ip"
+  split_on_commas "${domain}" | while read item; do
+    local cid="$1"
+    local ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid" | head -n1)
+    local name=$(get_name "$cid")
+    local safename=$(get_safe_name "$name")
+    local record="${safename}.${item}"
+    set_record "$record" "$ip"
+  done
 }
 set_extra_records(){
   for record in "${extrahosts[@]}"; do
@@ -120,9 +123,20 @@ add_running_containers(){
     set_container_record "$id"
   done
 }
+
+split_on_commas() {
+  local IFS=,
+  local list=($1)
+  for word in "${list[@]}"; do
+    echo "$word"
+  done
+}
+
 add_wildcard_record(){
-  echo "address=/.${domain}/${hostmachineip}" > "/etc/dnsmasq.d/hostmachine.conf"
-  echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
+  split_on_commas "${domain}" | while read item; do
+    echo "address=/.${item}/${hostmachineip}" > "/etc/dnsmasq.d/${item}.conf"
+    echo -e "${GREEN}+ Added *.${item} → ${hostmachineip}${RESET}"
+  done
 }
 
 add_wildcard_record
