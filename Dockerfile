@@ -1,4 +1,4 @@
-FROM alpine:3.3
+FROM alpine:3.9
 MAINTAINER Pål Ruud <ruudud@gmail.com>
 
 RUN apk --no-cache add bash curl dnsmasq
