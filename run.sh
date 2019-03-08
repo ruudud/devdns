@@ -3,6 +3,7 @@
 domain="${DNS_DOMAIN:-test}"
 extrahosts=($EXTRA_HOSTS)
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
+network="${NETWORK:-bridge}"
 naming="${NAMING:-default}"
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
@@ -33,7 +34,7 @@ get_name(){
 }
 get_safe_name(){
   local name="$1"
-  case "$NAMING" in
+  case "$naming" in
     full)
       # Replace _ with -, useful when using default Docker naming
       name=$(echo "$name" | sed 's/_/-/g')
@@ -74,7 +75,7 @@ del_container_record(){
 }
 set_container_record(){
   local cid="$1"
-  local ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid" | head -n1)
+  local ip=$(docker inspect -f "{{.NetworkSettings.Networks.${network}.IPAddress}}" "$cid" | head -n1)
   local name=$(get_name "$cid")
   local safename=$(get_safe_name "$name")
   local record="${safename}.${domain}"
@@ -108,6 +109,7 @@ setup_listener(){
         safename=$(get_safe_name "$name")
 
         del_container_record "$safename"
+        sleep 1
         find_and_set_prev_record "$safename"
         reload_dnsmasq
         ;;

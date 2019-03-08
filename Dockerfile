@@ -11,7 +11,7 @@ RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-1.11.1.tgz \
 COPY dnsmasq.conf /etc/dnsmasq.conf
 COPY run.sh /run.sh
 
-ENV DNS_DOMAIN="test" EXTRA_HOSTS="" HOSTMACHINE_IP="172.17.0.1" NAMING="default"
+ENV DNS_DOMAIN="test" EXTRA_HOSTS="" HOSTMACHINE_IP="172.17.0.1" NAMING="default" NETWORK="bridge"
 
 EXPOSE 53/udp
 

@@ -9,8 +9,10 @@ containers from the host machine**.
 
 ## Running
 
-    docker run -d --name devdns -p 53:53/udp \
+```sh
+docker run -d --name devdns -p 53:53/udp \
       -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
+```
 
 devdns requires access to the Docker socket to be able to query for container
 names and IP addresses, in addition to listen to start/stop events.
@@ -32,7 +34,7 @@ Docker.
 When running other containers, specify the devdns container IP as the DNS to
 use:
 
-```
+```sh
 $ docker run -d --name devdns -p 53:53/udp \
   -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
 $ docker run -d --name redis redis
@@ -93,34 +95,41 @@ Thus, the best place to add extra resolvers in Linux, is to use your network
 configurator. YMMV. This means NetworkManager (see section below), WICD, or
 manually using `/etc/network/interfaces`:
 
-    auto p3p1
-    iface p3p1 inet dhcp
-    dns-search test
-    dns-nameservers 127.0.0.1
+```
+auto p3p1
+iface p3p1 inet dhcp
+dns-search test
+dns-nameservers 127.0.0.1
+```
 
 Alternatively, edit `/etc/dhcp/dhclient.conf` instead. Uncomment or add the
 following line:
 
-    supersede domain-name "test";
-    prepend domain-name-servers 127.0.0.1;
+```
+supersede domain-name "test";
+prepend domain-name-servers 127.0.0.1;
+```
 
 
 ## Configuration
 
- * `DNS_DOMAIN`: set the local domain used. (default: test)
- * `HOSTMACHINE_IP`: IP address of non-matching queries (default: 172.17.0.1)
+ * `DNS_DOMAIN`: set the local domain used. (default: **test**)
+ * `HOSTMACHINE_IP`: IP address of non-matching queries (default:
+   **172.17.0.1**)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of
-   host=ip pairs. (default: '')
+   host=ip pairs. (default: **''**)
  * `NAMING`: set to "full" to convert `_` to `-` (default: up to first `_` of
    container name)
+ * `NETWORK`: set the network to use. (default: **bridge**)
 
 Example:
 
-```
+```sh
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
   -e DNS_DOMAIN=docker \
   -e HOSTMACHINE_IP=192.168.1.1 \
   -e NAMING=full \
+  -e NETWORK=mynetwork \
   -e EXTRA_HOSTS="dockerhost=172.17.0.1 doubleclick.net=127.0.0.1" \
   ruudud/devdns
 ```
@@ -137,7 +146,7 @@ The DNS will resolve to the lastly added container, and try to re-toggle the
 previous matching container when stopping the currently active one.
 
 Example:
-```
+```sh
 # (devdns already running)
 $ docker run -d --name redis_local-V1 redis
 $ dig redis.test     # resolves to the IP of redis_local-V1
@@ -164,7 +173,7 @@ Edit `/etc/NetworkManager/NetworkManager.conf` and comment out the line
 Restart using `sudo service network-manager restart`.
 
 Now you should be able to do
-```
+```sh
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
     -p 53:53/udp ruudud/devdns
 ```
