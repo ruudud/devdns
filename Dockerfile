@@ -3,9 +3,9 @@ MAINTAINER Pål Ruud <ruudud@gmail.com>
 
 RUN apk --no-cache add bash curl dnsmasq
 
-RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-1.11.1.tgz \
-        | tar zx -C /tmp &&\
-    mv /tmp/docker/* /usr/local/bin/ &&\
+RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-1.11.1.tgz | tar zx -C /tmp &&\
+    mv /tmp/docker/docker /usr/local/bin/ &&\
+    rm -rf /tmp/docker &&\
     mkdir -p /etc/dnsmasq.d
 
 COPY dnsmasq.conf /etc/dnsmasq.conf
