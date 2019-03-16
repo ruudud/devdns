@@ -56,6 +56,7 @@ set_record(){
   local fpath="${dnsmasq_path}${record}.conf"
   local ip="$2"
   [[ -z "$ip" ]] && return 1
+  [[ "$ip" == '<no value>' ]] && return 1
 
   local infomsg="${GREEN}+ Added ${record} → ${ip}${RESET}"
   if [[ -f "$fpath" ]]; then
@@ -75,7 +76,15 @@ del_container_record(){
 }
 set_container_record(){
   local cid="$1"
-  local ip=$(docker inspect -f "{{.NetworkSettings.Networks.${network}.IPAddress}}" "$cid" | head -n1)
+  local cnetwork=$network
+  # set the network to the container first detected network
+  if [[ "$cnetwork" == "auto" ]]; then
+    cnetwork=$(docker inspect -f '{{ range $k, $v := .NetworkSettings.Networks }}{{ $k }}{{ end }}' "$cid" | head -n1)
+    # abort if the container has no network interfaces, e.g.
+    # if it's inherited its network from another container
+    [[ -z "$cnetwork" ]] && return 1
+  fi
+  local ip=$(docker inspect -f "{{.NetworkSettings.Networks.${cnetwork}.IPAddress}}" "$cid" | head -n1)
   local name=$(get_name "$cid")
   local safename=$(get_safe_name "$name")
   local record="${safename}.${domain}"

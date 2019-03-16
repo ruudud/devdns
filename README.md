@@ -39,7 +39,7 @@ $ docker run -d --name devdns -p 53:53/udp \
   -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
 $ docker run -d --name redis redis
 $ docker run -it --rm \
-  --dns=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" devdns` debian \
+  --dns=`docker inspect -f "{{ range.NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}" devdns | head -n1` debian \
   ping redis.test
 ```
 
@@ -120,7 +120,10 @@ prepend domain-name-servers 127.0.0.1;
    host=ip pairs. (default: **''**)
  * `NAMING`: set to "full" to convert `_` to `-` (default: up to first `_` of
    container name)
- * `NETWORK`: set the network to use. (default: **bridge**)
+ * `NETWORK`: set the network to use. if the network name is dynamically
+   determined (e.g. using devdns in a docker-compose file), set NETWORK to
+   **auto** to automatically use a containers first network interface.
+   (default: **bridge**)
 
 Example:
 
