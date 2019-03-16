@@ -75,7 +75,16 @@ del_container_record(){
 }
 set_container_record(){
   local cid="$1"
-  local ip=$(docker inspect -f "{{.NetworkSettings.Networks.${network}.IPAddress}}" "$cid" | head -n1)
+  local cnetwork="$network"
+
+  # set the network to the first detected network, if any
+  if [[ "$network" == "auto" ]]; then
+    cnetwork=$(docker inspect -f '{{ range $k, $v := .NetworkSettings.Networks }}{{ $k }}{{ end }}' "$cid" | head -n1)
+    # abort if the container has no network interfaces, e.g.
+    # if it inherited its network from another container
+    [[ -z "$cnetwork" ]] && return 1
+  fi
+  local ip=$(docker inspect -f "{{.NetworkSettings.Networks.${cnetwork}.IPAddress}}" "$cid" | head -n1)
   local name=$(get_name "$cid")
   local safename=$(get_safe_name "$name")
   local record="${safename}.${domain}"
