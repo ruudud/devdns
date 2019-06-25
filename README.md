@@ -68,9 +68,9 @@ Replace `test` with whatever you set as config for `DNS_DOMAIN`.
 should be reachable from within all started containers given that you've
 included `-p 53:53/udp` when starting the devdns container.
 
-[Docker configuring docs]: https://docs.docker.com/articles/configuring/#configuring-docker
-[Docker systemd docs]: https://docs.docker.com/articles/systemd/#custom-docker-daemon-options
-[boot2docker faq]: https://github.com/boot2docker/boot2docker/blob/master/doc/FAQ.md#local-customisation-with-persistent-partition
+[Docker configuring docs]: https://docs.docker.com/config/daemon/#configure-the-docker-daemon
+[Docker systemd docs]: https://docs.docker.com/config/daemon/systemd/#custom-docker-daemon-options
+[boot2docker faq]: https://github.com/boot2docker/boot2docker/blob/master/FAQ.md#local-customisation-with-persistent-partition
 
 
 ### Host Machine → Containers
