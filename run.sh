@@ -40,6 +40,10 @@ get_safe_name(){
       name=$(echo "$name" | sed 's/_/-/g')
       ;;
 
+    unsafe)
+      # Don't replace any character, even if invalid for RFC 1123
+      ;;
+
     *)
       # Docker allows _ in names, but other than that same as RFC 1123
       # We remove everything from "_" and use the result as record.
