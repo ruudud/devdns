@@ -56,6 +56,7 @@ set_record(){
   local fpath="${dnsmasq_path}${record}.conf"
   local ip="$2"
   [[ -z "$ip" ]] && return 1
+  [[ "$ip" == "<no value>" ]] && return 1
 
   local infomsg="${GREEN}+ Added ${record} → ${ip}${RESET}"
   if [[ -f "$fpath" ]]; then
