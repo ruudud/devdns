@@ -85,7 +85,7 @@ set_container_record(){
     # if it inherited its network from another container
     [[ -z "$cnetwork" ]] && return 1
   fi
-  local ip=$(docker inspect -f "{{.NetworkSettings.Networks.${cnetwork}.IPAddress}}" "$cid" | head -n1)
+  local ip=$(docker inspect -f "{{with index .NetworkSettings.Networks \"${cnetwork}\"}}{{.IPAddress}}{{end}}" "$cid" | head -n1)
   local name=$(get_name "$cid")
   local safename=$(get_safe_name "$name")
   local record="${safename}.${domain}"
