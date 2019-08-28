@@ -7,6 +7,8 @@ network="${NETWORK:-bridge}"
 naming="${NAMING:-default}"
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
+resolvConfigFile="/tmp/resolv.conf"
+resolvComment="# added by devdns"
 
 RESET="\e[0;0m"
 RED="\e[0;31;49m"
@@ -25,6 +27,12 @@ reload_dnsmasq(){
 }
 shutdown(){
   echo "Shutting down..."
+  local tmpFile="${resolvConfigFile}.tmp"
+  if [[ -f $resolvConfigFile ]]; then
+    cat $resolvConfigFile > $tmpFile
+    sed -i "/$resolvComment/d" $tmpFile
+    cat $tmpFile > $resolvConfigFile
+  fi
   kill $dnsmasq_pid
   exit 0
 }
@@ -136,9 +144,22 @@ add_wildcard_record(){
   echo "address=/.${domain}/${hostmachineip}" > "/etc/dnsmasq.d/hostmachine.conf"
   echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
 }
+setResolvConf(){
+  local tmpFile="${resolvConfigFile}.tmp"
+  
+  if [[ -f $resolvConfigFile ]]; then
+    cat $resolvConfigFile > $tmpFile
+    sed -i "/$resolvComment/d" $tmpFile
+    local localIp=$(hostname -i)
+    sed -i "1i nameserver $localIp $resolvComment" $tmpFile
+    cat $tmpFile > $resolvConfigFile
+    echo -e "${YELLOW}~ Add $localIp as nameserver in resolv.conf"
+  fi
+}
 
 add_wildcard_record
 add_running_containers
 set_extra_records
 start_dnsmasq
+setResolvConf
 setup_listener

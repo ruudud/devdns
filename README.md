@@ -110,6 +110,16 @@ supersede domain-name "test";
 prepend domain-name-servers 127.0.0.1;
 ```
 
+An other solution is mounting `/etc/resolv.conf` file inside container as `/tmp/resolv.conf`:
+```
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock:ro -v /etc/resolv.conf:/tmp/resolv.conf
+``` 
+this will automatically edit configuration adding devdns's IP as system nameserver on container start. 
+You can see this on the first line of `/etc/resolv.conf`:
+```
+nameserver 192.168.16.2 # added by devdns
+```
+this configuration will be automatically removed when container is stopped or killed.
 
 ## Configuration
 
