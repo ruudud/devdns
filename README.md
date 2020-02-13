@@ -4,8 +4,8 @@ when running a bunch of containers on your laptop. Useful for
 **container to container communication**, or just an easy way of **reaching
 containers from the host machine**.
 
-[![](https://images.microbadger.com/badges/image/ruudud/devdns.svg)](https://microbadger.com/images/ruudud/devdns "Get your own image badge on microbadger.com")
-
+![Image Size](https://img.shields.io/microbadger/image-size/ruudud/devdns)
+![Docker Pulls](https://img.shields.io/docker/pulls/ruudud/devdns)
 
 ## Running
 
@@ -37,26 +37,26 @@ use:
 ```sh
 $ docker run -d --name devdns -p 53:53/udp \
   -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
-$ docker run -d --name redis redis
+$ docker run -d --name redis redis:alpine
 $ docker run -it --rm \
-  --dns=`docker inspect -f "{{ range.NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}" devdns | head -n1` debian \
+  --dns=`docker inspect -f "{{ range.NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}" devdns | head -n1` alpine \
   ping redis.test
 ```
 
 Please note that the `--dns` flag will prepend the given DNS server to the
-Docker default (normally `8.8.8.8`), so lookups for external addresses will
-still work.
+Docker default, so lookups for external addresses will still work.
 
 #### Docker Daemon Configuration
 If you want devdns to be added by default to all new containers, you need to
-add some custom Docker daemon options. The place to put this config varies:
+add some custom Docker daemon options as per the [dockerd reference][].
 
- * Ubuntu <= 14.10: `/etc/default/docker`, see the
-   [Docker configuring docs][]
- * Ubuntu >= 15.04: `/etc/systemd/system/docker.service`, see the
-   [Docker systemd docs][]
- * OSX boot2docker: `/var/lib/boot2docker/profile`, see the
-   [boot2docker faq][]
+The exact process to set these options varies by the way you launch the Docker
+daemon and/or the underlying OS:
+
+ * systemd (Ubuntu, Debian, RHEL 7, CentOS 7, Fedora, Archlinux) —
+   `sudo systemctl edit docker.service`, change the `ExecStart` line
+ * Ubuntu 12.04 — set `DOCKER_OPTS` in `/etc/default/docker`
+ * OS/X — select *Preferences* -> *Daemon* -> *Advanced*
 
 The extra options you'll have to add is
 
@@ -68,32 +68,26 @@ Replace `test` with whatever you set as config for `DNS_DOMAIN`.
 should be reachable from within all started containers given that you've
 included `-p 53:53/udp` when starting the devdns container.
 
-[Docker configuring docs]: https://docs.docker.com/config/daemon/#configure-the-docker-daemon
-[Docker systemd docs]: https://docs.docker.com/config/daemon/systemd/#custom-docker-daemon-options
-[boot2docker faq]: https://github.com/boot2docker/boot2docker/blob/master/FAQ.md#local-customisation-with-persistent-partition
+> Note: There are some caveats with Docker and how it manages a container's
+> `/etc/resolv.conf` file. Unless you do something exotic, like parsing this
+> file, you should be fine. See [Docker DNS docs][] for more information.
+
+[dockerd reference]: https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-dns-options
+[Docker DNS docs]: https://docs.docker.com/v17.09/engine/userguide/networking/configure-dns/
 
 
 ### Host Machine → Containers
-You will need to add some configuration to your OS resolving mechanism.  
+You will need to add some configuration to your OS DNS resolving mechanism to
+make it query devdns.  
 **NOTE**: This is only practical if you added `-p 53:53/udp` when starting
 devdns.
 
-#### OSX
-Create a file `/etc/resolver/test` containing
-
-    nameserver <listen address of devdns>
-
-In OSX, there's a good chance you're using boot2docker, so the listen address
-will probably be the output of `boot2docker ip`.
-Please note that the name of the file created in `/etc/resolver` has to match
-the value of the `DNS_DOMAIN` setting (default "test").
-
-
-#### Linux / Ubuntu
-Nowadays, direct edits of `/etc/resolv.conf` will be removed at reboot.
+#### Linux
+Nowadays, direct edits of `/etc/resolv.conf` will often be removed at reboot.
 Thus, the best place to add extra resolvers in Linux, is to use your network
-configurator. YMMV. This means NetworkManager (see section below), WICD, or
-manually using `/etc/network/interfaces`:
+configurator. YMMV. This means NetworkManager (see [section
+below](#networkmanager-on-ubuntu)), WICD, or manually using
+`/etc/network/interfaces`:
 
 ```
 auto p3p1
@@ -102,13 +96,15 @@ dns-search test
 dns-nameservers 127.0.0.1
 ```
 
-Alternatively, edit `/etc/dhcp/dhclient.conf` instead. Uncomment or add the
-following line:
+#### OSX
+Create a file `/etc/resolver/test` containing
 
-```
-supersede domain-name "test";
-prepend domain-name-servers 127.0.0.1;
-```
+    nameserver 127.0.0.1
+
+In OSX and Docker for Mac, port binding should work directly on the host
+machine. Please note that the name of the file created in `/etc/resolver` has
+to match the value of the `DNS_DOMAIN` setting (default "test").
+
 
 
 ## Configuration
@@ -179,4 +175,3 @@ Now you should be able to do
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
     -p 53:53/udp ruudud/devdns
 ```
-
