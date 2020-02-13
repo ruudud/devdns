@@ -1,5 +1,5 @@
 FROM alpine:3.9
-MAINTAINER Pål Ruud <ruudud@gmail.com>
+LABEL maintainer="Pål Ruud <ruudud@gmail.com>"
 
 RUN apk --no-cache add bash curl dnsmasq
 

@@ -58,7 +58,7 @@ daemon and/or the underlying OS:
  * Ubuntu 12.04 — set `DOCKER_OPTS` in `/etc/default/docker`
  * OS/X — select *Preferences* -> *Daemon* -> *Advanced*
 
-The extra options you'll have to add is
+The extra flags you'll have to add are
 
     --dns 172.17.0.1 --dns-search test
 
