@@ -52,13 +52,11 @@ get_safe_name(){
   echo "$name"
 }
 set_record(){
-  local record="$1"
-  local fpath="${dnsmasq_path}${record}.conf"
-  local ip="$2"
+  local record="$1" ip="$2" fpath="${dnsmasq_path}${record}.conf" infomsg
   [[ -z "$ip" ]] && return 1
   [[ "$ip" == "<no value>" ]] && return 1
 
-  local infomsg="${GREEN}+ Added ${record} → ${ip}${RESET}"
+  infomsg="${GREEN}+ Added ${record} → ${ip}${RESET}"
   if [[ -f "$fpath" ]]; then
     infomsg="${YELLOW}+ Replaced ${record} → ${ip}${RESET}"
   fi
@@ -67,16 +65,13 @@ set_record(){
   echo -e "$infomsg"
 }
 del_container_record(){
-  local name="$1"
-  local record="${name}.${domain}"
-  local file="${dnsmasq_path}${record}.conf"
+  local name="$1" record="${name}.${domain}" file="${dnsmasq_path}${record}.conf"
 
   [[ -f "$file" ]] && rm "$file"
   echo -e "${RED}- Removed record for ${record}${RESET}"
 }
 set_container_record(){
-  local cid="$1"
-  local cnetwork="$network"
+  local cid="$1" cnetwork="$network" ip name safename record
 
   # set the network to the first detected network, if any
   if [[ "$network" == "auto" ]]; then
@@ -85,28 +80,30 @@ set_container_record(){
     # if it inherited its network from another container
     [[ -z "$cnetwork" ]] && return 1
   fi
-  local ip=$(docker inspect -f "{{with index .NetworkSettings.Networks \"${cnetwork}\"}}{{.IPAddress}}{{end}}" "$cid" | head -n1)
-  local name=$(get_name "$cid")
-  local safename=$(get_safe_name "$name")
-  local record="${safename}.${domain}"
+  ip=$(docker inspect -f "{{with index .NetworkSettings.Networks \"${cnetwork}\"}}{{.IPAddress}}{{end}}" "$cid" | head -n1)
+  name=$(get_name "$cid")
+  safename=$(get_safe_name "$name")
+  record="${safename}.${domain}"
   set_record "$record" "$ip"
 }
 set_extra_records(){
+  local host ip
   for record in "${extrahosts[@]}"; do
-    local host=${record%=*}
-    local ip=${record#*=}
+    host=${record%=*}
+    ip=${record#*=}
     set_record "$host" "$ip"
   done
 }
 find_and_set_prev_record(){
-  local name="$1"
-  local prevcid=$(docker ps -q -f "name=${name}.*" | head -n1)
+  local name="$1" prevcid
+  prevcid=$(docker ps -q -f "name=${name}.*" | head -n1)
   [[ -z "$prevcid" ]] && return 0
 
   echo -e "${YELLOW}+ Found other active container with matching name: ${name}"
   set_container_record "$prevcid"
 }
 setup_listener(){
+  local name
   while read -r time _ event container meta; do
     case "$event" in
       start|rename)
@@ -114,7 +111,7 @@ setup_listener(){
         reload_dnsmasq
         ;;
       die)
-        local name=$(echo "$meta" | grep -Eow "name=[a-zA-Z0-9.-_]+" | cut -d= -f2)
+        name=$(echo "$meta" | grep -Eow "name=[a-zA-Z0-9.-_]+" | cut -d= -f2)
         [[ -z "$name" ]] && continue
         safename=$(get_safe_name "$name")
 
@@ -127,7 +124,8 @@ setup_listener(){
   done < <(docker events -f event=start -f event=die -f event=rename)
 }
 add_running_containers(){
-  local ids=$(docker ps -q)
+  local ids
+  ids=$(docker ps -q)
   for id in $ids; do
     set_container_record "$id"
   done
