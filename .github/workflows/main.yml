@@ -6,8 +6,12 @@ jobs:
     steps: 
     - name: Checkout
       uses: actions/checkout@master
-    - name: lint
+    - name: Dockerfile check
       uses: luke142367/Docker-Lint-Action@v1.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TARGET: Dockerfile
+    - name: Shell script check
+      uses: azohra/shell-linter@v0.2.0
+      with:
+        path: "run.sh"
