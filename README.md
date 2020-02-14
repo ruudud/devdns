@@ -6,6 +6,7 @@ containers from the host machine**.
 
 ![Image Size](https://img.shields.io/microbadger/image-size/ruudud/devdns)
 ![Docker Pulls](https://img.shields.io/docker/pulls/ruudud/devdns)
+![Lint](https://github.com/ruudud/devdns/workflows/Lint/badge.svg?event=push)
 
 ## Running
 
