@@ -1,5 +1,5 @@
 #!/bin/bash
-[[ ! -z "$DEBUG" ]] && set -x
+[[ -n "$DEBUG" ]] && set -x
 domain="${DNS_DOMAIN:-test}"
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
 network="${NETWORK:-bridge}"
