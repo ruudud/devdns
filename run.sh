@@ -1,10 +1,11 @@
 #!/bin/bash
-#set -x
+[[ ! -z "$DEBUG" ]] && set -x
 domain="${DNS_DOMAIN:-test}"
-extrahosts=($EXTRA_HOSTS)
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
 network="${NETWORK:-bridge}"
 naming="${NAMING:-default}"
+read -r -a extrahosts <<< "$EXTRA_HOSTS"
+
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
 
@@ -37,7 +38,7 @@ get_safe_name(){
   case "$naming" in
     full)
       # Replace _ with -, useful when using default Docker naming
-      name=$(echo "$name" | sed 's/_/-/g')
+      name="${name//_/-}"
       ;;
 
     *)
@@ -52,7 +53,9 @@ get_safe_name(){
   echo "$name"
 }
 set_record(){
-  local record="$1" ip="$2" fpath="${dnsmasq_path}${record}.conf" infomsg
+  local record="$1" ip="$2" fpath infomsg
+  fpath="${dnsmasq_path}${record}.conf"
+
   [[ -z "$ip" ]] && return 1
   [[ "$ip" == "<no value>" ]] && return 1
 
@@ -65,13 +68,16 @@ set_record(){
   echo -e "$infomsg"
 }
 del_container_record(){
-  local name="$1" record="${name}.${domain}" file="${dnsmasq_path}${record}.conf"
+  local name="$1" record file
+  record="${name}.${domain}"
+  file="${dnsmasq_path}${record}.conf"
 
   [[ -f "$file" ]] && rm "$file"
   echo -e "${RED}- Removed record for ${record}${RESET}"
 }
 set_container_record(){
-  local cid="$1" cnetwork="$network" ip name safename record
+  local cid="$1" ip name safename record cnetwork
+  cnetwork="$network"
 
   # set the network to the first detected network, if any
   if [[ "$network" == "auto" ]]; then
@@ -104,7 +110,7 @@ find_and_set_prev_record(){
 }
 setup_listener(){
   local name
-  while read -r time _ event container meta; do
+  while read -r _ _ event container meta; do
     case "$event" in
       start|rename)
         set_container_record "$container"
