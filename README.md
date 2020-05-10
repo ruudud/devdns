@@ -22,7 +22,7 @@ Binding port 53 on the host machine is optional, but will make it easier when
 configuring local resolving.
 
 The DNS server running in devdns is set to proxy requests for unknown hosts to
-Google's DNS server 8.8.8.8.
+the configured fallback DNS (default Google's DNS server 8.8.8.8).
 It also adds a wildcard record (normally `*.test`, see `DNS_DOMAIN` below)
 pointing back at the host machine (bridge IP in Linux), to facilitate
 communication when running a combination of services "inside" and "outside" of
@@ -111,6 +111,7 @@ to match the value of the `DNS_DOMAIN` setting (default "test").
 ## Configuration
 
  * `DNS_DOMAIN`: set the local domain used. (default: **test**)
+ * `FALLBACK_DNS`: set the DNS used for unknown hosts. (default: **8.8.8.8**)
  * `HOSTMACHINE_IP`: IP address of non-matching queries (default:
    **172.17.0.1**)
  * `EXTRA_HOSTS`: list of extra records to create, space-separated string of

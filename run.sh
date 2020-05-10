@@ -1,6 +1,7 @@
 #!/bin/bash
 [[ -n "$DEBUG" ]] && set -x
 domain="${DNS_DOMAIN:-test}"
+fallbackdns="${FALLBACK_DNS:-8.8.8.8}"
 hostmachineip="${HOSTMACHINE_IP:-172.17.0.1}"
 network="${NETWORK:-bridge}"
 naming="${NAMING:-default}"
@@ -137,12 +138,38 @@ add_running_containers(){
   done
 }
 add_wildcard_record(){
-  echo "address=/.${domain}/${hostmachineip}" > "/etc/dnsmasq.d/hostmachine.conf"
+  echo "address=/.${domain}/${hostmachineip}" > "${dnsmasq_path}hostmachine.conf"
   echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
 }
+set_fallback_dns(){
+  sed -i "s/{{FALLBACK_DNS}}/${fallbackdns}/" "/etc/dnsmasq.conf"
+  echo "Fallback DNS set to ${fallbackdns}"
+}
+print_startup_msg(){
+  echo -e "${YELLOW}"
+  cat << "EOF"
+ (                      (          )   (
+ )\ )                   )\ )    ( /(   )\ )
+(()/(    (     (   (   (()/(    )\()) (()/(
+ /(_))   )\    )\  )\   /(_))  ((_)\   /(_))
+(_))_   ((_)  ((_)((_) (_))_    _((_) (_))
+EOF
+  echo -en "${RESET}"
+  cat << "EOF"
+ |   \  | __| \ \ / /   |   \  | \| | / __|
+ | |) | | _|   \ V /    | |) | | .` | \__ \
+ |___/  |___|   \_/     |___/  |_|\_| |___/
+EOF
+ echo ""
+}
 
+set -Eeo pipefail
+print_startup_msg
+set_fallback_dns
 add_wildcard_record
 add_running_containers
 set_extra_records
 start_dnsmasq
+set +Eeo pipefail
+
 setup_listener
