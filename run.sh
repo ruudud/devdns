@@ -167,9 +167,10 @@ set -Eeo pipefail
 print_startup_msg
 set_fallback_dns
 add_wildcard_record
-add_running_containers
 set_extra_records
 start_dnsmasq
 set +Eeo pipefail
+
+add_running_containers
 
 setup_listener
