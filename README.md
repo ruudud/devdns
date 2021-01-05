@@ -12,7 +12,7 @@ containers from the host machine**.
 
 ```sh
 docker run -d --name devdns -p 53:53/udp \
-      -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
+      -v /var/run/docker.sock:/var/run/docker.sock:ro ruudud/devdns
 ```
 
 devdns requires access to the Docker socket to be able to query for container
@@ -37,7 +37,7 @@ use:
 
 ```sh
 $ docker run -d --name devdns -p 53:53/udp \
-  -v /var/run/docker.sock:/var/run/docker.sock ruudud/devdns
+  -v /var/run/docker.sock:/var/run/docker.sock:ro ruudud/devdns
 $ docker run -d --name redis redis:alpine
 $ docker run -it --rm \
   --dns=`docker inspect -f "{{ range.NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}" devdns | head -n1` alpine \
@@ -79,7 +79,8 @@ included `-p 53:53/udp` when starting the devdns container.
 
 ### Host Machine → Containers
 You will need to add some configuration to your OS DNS resolving mechanism to
-make it query devdns.  
+make it query devdns.
+
 **NOTE**: This is only practical if you added `-p 53:53/udp` when starting
 devdns.
 
@@ -97,6 +98,27 @@ dns-search test
 dns-nameservers 127.0.0.1
 ```
 
+##### Managed `resolv.conf`
+Another solution is mounting the host machine's `/etc/resolv.conf` at
+`/mnt/resolv.conf` and have devdns automatically add configuration on startup:
+
+```sh
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock:ro \
+      -v /etc/resolv.conf:/mnt/resolv.conf \
+      ruudud/devdns
+```
+
+Example config prepended to `/etc/resolv.conf`:
+```
+nameserver 192.168.16.2 # added by devdns
+```
+The configuration will be automatically removed when container is stopped or
+killed.
+
+> :warning: **It's common that `/etc/resolv.conf` becomes overwritten** as
+> many operating systems now manage the creation of that file, and in some
+> cases not even rely on it at all.
+
 #### OSX
 Create a file `/etc/resolver/test` containing
 
@@ -105,7 +127,6 @@ Create a file `/etc/resolver/test` containing
 In OSX and Docker for Mac, port binding should work directly on the host
 machine. Please note that the name of the file created in `/etc/resolver` has
 to match the value of the `DNS_DOMAIN` setting (default "test").
-
 
 
 ## Configuration
@@ -174,6 +195,6 @@ Restart using `sudo service network-manager restart`.
 
 Now you should be able to do
 ```sh
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock \
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -p 53:53/udp ruudud/devdns
 ```

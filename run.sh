@@ -9,6 +9,8 @@ read -r -a extrahosts <<< "$EXTRA_HOSTS"
 
 dnsmasq_pid=""
 dnsmasq_path="/etc/dnsmasq.d/"
+resolvconf_file="/mnt/resolv.conf"
+resolvconf_comment="# added by devdns"
 
 RESET="\e[0;0m"
 RED="\e[0;31;49m"
@@ -28,6 +30,12 @@ reload_dnsmasq(){
 }
 shutdown(){
   echo "Shutting down..."
+  if [[ -f "$resolvconf_file" ]]; then
+    ed -s "$resolvconf_file" <<EOF
+g/${resolvconf_comment}/d
+w
+EOF
+  fi
   kill $dnsmasq_pid
   exit 0
 }
@@ -105,14 +113,6 @@ set_container_record(){
   record="${safename}.${domain}"
   set_record "$record" "$ip"
 }
-set_extra_records(){
-  local host ip
-  for record in "${extrahosts[@]}"; do
-    host=${record%=*}
-    ip=${record#*=}
-    set_record "$host" "$ip"
-  done
-}
 find_and_set_prev_record(){
   local name="$1" prevcid
   prevcid=$(docker ps -q -f "name=${name}.*" | head -n1)
@@ -149,9 +149,32 @@ add_running_containers(){
     set_container_record "$id"
   done
 }
+set_extra_records(){
+  local host ip
+  for record in "${extrahosts[@]}"; do
+    host=${record%=*}
+    ip=${record#*=}
+    set_record "$host" "$ip"
+  done
+}
 add_wildcard_record(){
   echo "address=/.${domain}/${hostmachineip}" > "${dnsmasq_path}hostmachine.conf"
   echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
+}
+set_resolvconf(){
+  local devdns_ip
+
+  if [[ -f "$resolvconf_file" ]]; then
+    devdns_ip=$(hostname -i)
+    ed -s "$resolvconf_file" <<EOF
+g/${resolvconf_comment}/d
+0a
+nameserver $devdns_ip $resolvconf_comment
+.
+w
+EOF
+    echo "Host machine resolv.conf configured to use devdns at ${devdns_ip}"
+  fi
 }
 set_fallback_dns(){
   sed -i "s/{{FALLBACK_DNS}}/${fallbackdns}/" "/etc/dnsmasq.conf"
@@ -178,6 +201,7 @@ EOF
 set -Eeo pipefail
 print_startup_msg
 set_fallback_dns
+set_resolvconf
 add_wildcard_record
 set_extra_records
 start_dnsmasq
