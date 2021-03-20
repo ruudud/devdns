@@ -8,7 +8,8 @@ naming="${NAMING:-default}"
 read -r -a extrahosts <<< "$EXTRA_HOSTS"
 
 dnsmasq_pid=""
-dnsmasq_path="/etc/dnsmasq.d/"
+dnsmasq_confdir="/etc/dnsmasq.d/"
+dnsmasq_hostsdir="/etc/dnsmasq-hosts.d/"
 resolvconf_file="/mnt/resolv.conf"
 resolvconf_comment="# added by devdns"
 
@@ -21,13 +22,11 @@ BOLD="\e[1m"
 trap shutdown SIGINT SIGTERM
 
 start_dnsmasq(){
-  dnsmasq --keep-in-foreground &
+  dnsmasq --keep-in-foreground --no-hosts --hostsdir="$dnsmasq_hostsdir" &
   dnsmasq_pid=$!
 }
 reload_dnsmasq(){
-  kill $dnsmasq_pid
-  sleep 1
-  start_dnsmasq
+  kill -1 $dnsmasq_pid
 }
 shutdown(){
   echo "Shutting down..."
@@ -77,7 +76,7 @@ get_safe_name(){
 }
 set_record(){
   local record="$1" ip="$2" fpath infomsg
-  fpath="${dnsmasq_path}${record}.conf"
+  fpath="${dnsmasq_hostsdir}${record}.conf"
 
   [[ -z "$ip" ]] && print_error "ip" "$record" && return 1
   [[ "$ip" == "<no value>" ]] && print_error "ip" "$record" && return 1
@@ -87,13 +86,13 @@ set_record(){
     infomsg="${YELLOW}+ Replaced ${record} → ${ip}${RESET}"
   fi
 
-  echo "address=/.${record}/${ip}" > "$fpath"
+  echo "${ip} ${record}" > "$fpath"
   echo -e "$infomsg"
 }
 del_container_record(){
   local name="$1" record file
   record="${name}.${domain}"
-  file="${dnsmasq_path}${record}.conf"
+  file="${dnsmasq_hostsdir}${record}.conf"
 
   [[ -f "$file" ]] && rm "$file" && echo -e "${RED}- Removed record for ${record}${RESET}"
 }
@@ -159,8 +158,11 @@ set_extra_records(){
   done
 }
 add_wildcard_record(){
-  echo "address=/.${domain}/${hostmachineip}" > "${dnsmasq_path}hostmachine.conf"
+  echo "address=/.${domain}/${hostmachineip}" > "${dnsmasq_confdir}hostmachine.conf"
   echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
+}
+ensure_dirs(){
+  mkdir -p "$dnsmasq_hostsdir"
 }
 set_resolvconf(){
   local devdns_ip
@@ -203,6 +205,7 @@ set -Eeo pipefail
 print_startup_msg
 set_fallback_dns
 set_resolvconf
+ensure_dirs
 add_wildcard_record
 set_extra_records
 start_dnsmasq
