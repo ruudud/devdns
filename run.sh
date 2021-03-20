@@ -26,6 +26,7 @@ start_dnsmasq(){
 }
 reload_dnsmasq(){
   kill $dnsmasq_pid
+  sleep 1
   start_dnsmasq
 }
 shutdown(){
