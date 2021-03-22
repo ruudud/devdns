@@ -26,6 +26,7 @@ start_dnsmasq(){
   dnsmasq_pid=$!
 }
 reload_dnsmasq(){
+  # SIGHUP reloads config: https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html#:~:text=--dhcp-hostsdir%3D%3Cpath%3E
   kill -1 $dnsmasq_pid
 }
 shutdown(){
